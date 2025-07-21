@@ -1,0 +1,53 @@
+import requests
+import json
+import datetime
+import configparser
+ 
+# 기본 세팅 정보
+config = configparser.ConfigParser()
+config.read('setting for api testing.ini')
+gameID = config['SETTING']['ID']
+User = config['SETTING']['userID']
+key = config['SETTING']['key']
+type = config['SETTING']['type']
+now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+date = datetime.date.today().strftime("%y%m%d")
+ 
+count = config['SETTING']['count_number']
+ 
+ 
+while count < (count+1):
+    testkey = "QA"+ date + str(count)
+         
+    url = config['SETTING']['api_url']
+    refundAPI = config['SETTING']['refundAPI']
+ 
+    payload = json.dumps(
+        refundAPI
+)
+    headers = {
+        'key': key,
+        'Content-Type': type
+}
+ 
+    response = requests.request("POST", url, headers=headers, data=payload)
+     
+    if response.status_code == 200:
+        jsonData = response.json()
+        Result = jsonData.get("code")
+        Message = jsonData.get("message")
+        if Result == 0:
+            print("적립 차감 완료")
+            count += 1
+        else :
+            print("적립 차감 실패 <br> - code: %d <br> - message: %s <br> - testkey: %s" %(Result, Message, testkey))
+            break
+    else:
+        print("refundAPI 호출 실패 <br> - status code = %d" %response.status_code)
+        break
+ 
+ 
+if count == (count+1):
+  print("refundAPI를 이용한 적립 차감 %d건 완료! <br>로그 파일을 확인 후 다음 스텝을 진행하세요." %(count-1))
+else:
+  pass
