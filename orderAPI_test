@@ -1,0 +1,45 @@
+import requests
+import json
+import datetime
+import configparser
+
+config = configparser.ConfigParser()
+config.read('setting for api testing.ini')
+gameID = config['SETTING']['ID']
+User = config['SETTING']['userID']
+key = config['SETTING']['key']
+type = config['SETTING']['type']
+now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+date = datetime.date.today().strftime("%y%m%d")
+ 
+count = config['SETTING']['count_number']
+   
+while count < (count+1):
+  testkey = "QA"+ date + str(count)
+       
+  url = config['SETTING']['api_url']
+  orderAPI = config['SETTING']['orderAPI']
+ 
+  payload = json.dumps(
+    orderAPI   
+)
+  headers = {
+  'key': key,
+  'Content-Type': type
+}
+ 
+  response = requests.request("POST", url, headers=headers, data=payload)
+  log_id = response.headers.get('log_id')
+   
+  if response.status_code == 200:
+    print('호출 성공 --- ' + log_id)
+    count += 1
+  else:
+    print("호출 실패")
+    jsonData = response.json()
+    Result = jsonData.get("code")
+    Message = jsonData.get("message")
+    print("호출 실패 <br> - code: %d <br> - message: %s" %(Result, Message))
+    break
+ 
+print("orderAPI를 이용한 %d건 적립 완료! <br> 로그 파일을 확인 후 다음 스텝을 진행하세요." %(count-1))
